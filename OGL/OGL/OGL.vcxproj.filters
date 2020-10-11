@@ -13,10 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\rsc">
+      <UniqueIdentifier>{f30e11d8-1b2e-420c-b1d1-b2dceb7c5c21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\rsc\Shaders">
+      <UniqueIdentifier>{715ebc9a-59ee-4490-b131-c84c50f7acfc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fragment.shader">
+      <Filter>Resource Files\rsc\Shaders</Filter>
+    </None>
+    <None Include="vertex.shader">
+      <Filter>Resource Files\rsc\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
