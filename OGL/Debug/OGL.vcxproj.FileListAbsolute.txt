@@ -1,0 +1,2 @@
+C:\DEV\GAPI\OGL\Debug\OGL.exe
+C:\DEV\GAPI\OGL\Debug\OGL.pdb
