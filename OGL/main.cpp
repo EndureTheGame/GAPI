@@ -113,7 +113,7 @@ int main(void)
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-	window = glfwCreateWindow(WIDTH * 16 / 9, HEIGHT, title, NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
 	if (!window)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -133,22 +133,38 @@ int main(void)
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 
-	float positions[6] = { -0.5f, -0.5f,
-							0.5f, -0.5f,
-							0.0f,  0.5f };
+	float positions[8] = { 
+							0.5f,  0.5f,	// top right
+							0.5f, -0.5f,	// bottom right
+						   -0.5f, -0.5f,	// bottom left
+						   -0.5f,  0.5f };  // top left
+	
+	unsigned int indices[6] = {
+							0, 1, 3,
+							1, 2, 3 };
 
-	unsigned int VBO, VAO;
+	//BUFFER ID
+	unsigned int VBO, VAO, EBO;
+
+	//Gen Buffer/s
+	glGenBuffers(1, &EBO);
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	
+	//Vertex Array Bind
 	glBindVertexArray(VAO);
+
+	//Vertex Buffer Bind
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+
+	//Element(Vertex) Array Bind
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	//Layout
-	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
-
-	glBindVertexArray(0);
+	glEnableVertexAttribArray(0);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -210,7 +226,9 @@ int main(void)
 
 		glUseProgram(shader);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
