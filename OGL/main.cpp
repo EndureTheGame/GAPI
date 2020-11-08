@@ -1,10 +1,52 @@
-#include <GL/glew.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <String>
+#include <fstream>
+#include <sstream>
 
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+struct ShaderProgramSource
+{
+	std::string VertexShader;
+	std::string FragmentShader;
+};
+
+static ShaderProgramSource ParseShader(const std::string& filePath)
+{
+	std::ifstream stream(filePath);
+
+	enum class ShaderType
+	{
+		NONE = -1, VERTEX = 0, FRAGMENT = 1
+	};
+
+	std::string line;
+	std::stringstream ss[2];
+	ShaderType type = ShaderType::NONE;
+	while (getline(stream, line))
+	{
+		if (line.find("#Shader") != std::string::npos)
+		{
+			if (line.find("Vertex") != std::string::npos)
+			{
+				type = ShaderType::VERTEX;
+			}
+			else if (line.find("Fragment") != std::string::npos)
+			{
+				type = ShaderType::FRAGMENT;
+			}
+		}
+		else
+		{
+			ss[(int)type] << line << '\n'; 
+		}
+	}
+	return { ss[0].str(), ss[1].str() };
+}
 
 static unsigned int CompileShader(unsigned int type, const std::string& source)
 {
@@ -52,6 +94,7 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 
 int main(void)
 {
+	
 	GLFWwindow* window;
 
 	const char* title = "Test";
@@ -63,40 +106,54 @@ int main(void)
 	{
 		return -1;
 	}
-	glewInit();
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-
-	window = glfwCreateWindow(WIDTH * 16/9, HEIGHT, title, NULL, NULL);
+	window = glfwCreateWindow(WIDTH * 16 / 9, HEIGHT, title, NULL, NULL);
 	if (!window)
 	{
+		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 
 	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	if (glewInit() != GLEW_OK)
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "ERROR" << std::endl;
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
 	}
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 
 	float positions[6] = { -0.5f, -0.5f,
-							0.0f,  0.5f,
-							0.5f, -0.5f };
+							0.5f, -0.5f,
+							0.0f,  0.5f };
 
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	unsigned int VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0);
 	//Layout
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
 
+	glBindVertexArray(0);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+	/*
 	std::string vertexShader =
 		"#version 330 core\n"
 		"layout(location = 0)in vec4 position;  \n"
@@ -113,15 +170,46 @@ int main(void)
 		"  color = vec4(0.0, 0.0, 1.0, 1.0); \n"
 		"};							\n";
 
-	unsigned int shader = CreateShader(vertexShader, fragmentShader);
-	glUseProgram(shader);
+
+		*/
+
+	ShaderProgramSource source = ParseShader("BasicShader.shader");
+	std::cout << source.VertexShader << std::endl;
+	std::cout << source.FragmentShader << std::endl;
+
+	unsigned int shader = CreateShader(source.VertexShader, source.FragmentShader);
+
+
+	int location = glGetUniformLocation(shader, "u_Color");
+	_ASSERT(location != -1);
+	glUniform4f(location, 0.5, 0, 1.0, 1.0);
+
+	float r = 0.0f;
+	float increment = 0.5f;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
+	
 		/* Render here */
+		glClearColor(1.0f, 0.5f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glUniform4f(location, r, 0, 1.0, 1.0);
+
+		if (r > 1.0f)
+		{
+			increment = -0.05f;
+		}
+		else if (r < 0.05f)
+		{
+			increment = 0.05f;
+		}
+
+		r += increment;
+
+		glUseProgram(shader);
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		/* Swap front and back buffers */
@@ -132,8 +220,15 @@ int main(void)
 		glfwPollEvents();
 	}
 
-
 	glDeleteProgram(shader);
 	glfwTerminate();
+	
+	return 0;
+}
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
 }
