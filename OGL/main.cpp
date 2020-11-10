@@ -131,13 +131,13 @@ int main(void)
 	}
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
+	
 
-
-	float positions[8] = { 
-							0.5f,  0.5f,	// top right
-							0.5f, -0.5f,	// bottom right
-						   -0.5f, -0.5f,	// bottom left
-						   -0.5f,  0.5f };  // top left
+	float positions[] = {	//Positions   //Color
+							0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f,	// top right
+							0.5f, -0.5f,  0.0f, 1.0f, 0.0f,	1.0f,// bottom right
+						   -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,	1.0f,// bottom left
+						   -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,	1.0f };  // top left
 	
 	unsigned int indices[6] = {
 							0, 1, 3,
@@ -156,15 +156,18 @@ int main(void)
 
 	//Vertex Buffer Bind
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 
 	//Element(Vertex) Array Bind
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	//Layout
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(2* sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -196,12 +199,10 @@ int main(void)
 	unsigned int shader = CreateShader(source.VertexShader, source.FragmentShader);
 
 
-	int location = glGetUniformLocation(shader, "u_Color");
-	_ASSERT(location != -1);
-	glUniform4f(location, 0.5, 0, 1.0, 1.0);
+	//int location = glGetUniformLocation(shader, "u_Color");
+	//_ASSERT(location != -1);
+	//glUniform4f(location, 0.5f, 0.0f, 1.0f, 1.0f);
 
-	float r = 0.0f;
-	float increment = 0.5f;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -210,24 +211,18 @@ int main(void)
 		/* Render here */
 		glClearColor(1.0f, 0.5f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		glUniform4f(location, r, 0, 1.0, 1.0);
-
-		if (r > 1.0f)
-		{
-			increment = -0.05f;
-		}
-		else if (r < 0.05f)
-		{
-			increment = 0.05f;
-		}
-
-		r += increment;
-
+		
 		glUseProgram(shader);
+		
+		//float timeValue = glfwGetTime();
+		//float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+		
+		//glUniform4f(location, 0.0f, greenValue, 0.0f, 1.0f);
+
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		/* Swap front and back buffers */
