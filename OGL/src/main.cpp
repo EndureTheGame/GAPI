@@ -8,6 +8,29 @@
 
 #include "stb_image.h"
 
+//#########################################################################################################
+
+#define ASSERT(x) if (!(x)) __debugbreak();
+#define GlCall(x) GlClearError();\
+x;\
+ASSERT(GlLogCall(#x, __FILE__, __LINE__))
+
+static void GlClearError ()
+{
+	while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GlLogCall(const char* function, const char* file, int line)
+{
+	while (GLenum error = glGetError())
+	{
+		std::cout << "[GL ERROR]" << error << "| " << function << "| " << file << "| " << line << std::endl;
+		return false;
+	}
+	return true;
+}
+
+//#######################################################################################################
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -83,13 +106,13 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	glValidateProgram(program);
+	GlCall(glAttachShader(program, vs));
+	GlCall(glAttachShader(program, fs));
+	GlCall(glLinkProgram(program));
+	GlCall(glValidateProgram(program));
 
-	glDeleteShader(vs);
-	glDeleteShader(fs);
+	GlCall(glDeleteShader(vs));
+	GlCall(glDeleteShader(fs));
 
 	return program;
 }
@@ -100,11 +123,19 @@ void loadImage()
 	GLsizei width, height, channels;
 	stbi_set_flip_vertically_on_load(true);
 
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
 	unsigned char* data = stbi_load("res/container.jpg", &width, &height, &channels, 4);
 	if (data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		GlCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+		GlCall(glGenerateMipmap(GL_TEXTURE_2D));
 	}
 	else
 	{
@@ -165,56 +196,42 @@ int main(void)
 							0, 1, 3,
 							1, 2, 3 };
 
-	ShaderProgramSource source = ParseShader("BasicShader.shader");
-	//std::cout << source.VertexShader << std::endl;
-	//std::cout << source.FragmentShader << std::endl;
-	unsigned int shader = CreateShader(source.VertexShader, source.FragmentShader);
 
 	//int location = glGetUniformLocation(shader, "u_Color");
 	//glUniform4f(location, 0.5f, 0.0f, 1.0f, 1.0f);
 
-	glUseProgram(shader);
-	int location = glGetAttribLocation(shader, "u_Texture");
-	glEnableVertexAttribArray(location);
-
 	//BUFFER ID
 	unsigned int VBO, VAO, EBO;
-	unsigned int texture;
-
-	loadImage();
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
 
 	//Gen Buffer/s
-	glGenBuffers(1, &EBO);
-	glGenBuffers(1, &VBO);
-	glGenVertexArrays(1, &VAO);
+	GlCall(glGenBuffers(1, &EBO));
+	GlCall(glGenBuffers(1, &VBO));
+	GlCall(glGenVertexArrays(1, &VAO));
 	
 	//Vertex Array Bind
-	glBindVertexArray(VAO);
+	GlCall(glBindVertexArray(VAO));
 
 	//Vertex Buffer Bind
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+	GlCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+	GlCall(glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW));
 
 	//Element(Vertex) Array Bind
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+	GlCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
+	GlCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
 	//Layout
 
 	//Possitions
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
-	glEnableVertexAttribArray(0);
-
-	//Color
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	//Texture
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	GlCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0));
+	GlCall(glEnableVertexAttribArray(0));
+		  
+	//Colo(r
+	GlCall(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(2 * sizeof(float))));
+	GlCall(glEnableVertexAttribArray(1));
+		  
+	//Text(ure
+	GlCall(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float))));
+	GlCall(glEnableVertexAttribArray(2));
 	
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		/*
@@ -237,34 +254,36 @@ int main(void)
 
 		*/
 
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	ShaderProgramSource source = ParseShader("BasicShader.shader");
+	unsigned int shader = CreateShader(source.VertexShader, source.FragmentShader);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
+	loadImage();
+	unsigned int texture;
+	GlCall(glGenTextures(1, &texture));
+	GlCall(glBindTexture(GL_TEXTURE_2D, texture));
+	loadImage();
+	GlCall(glUseProgram(shader));
+	GlCall(glUniform1i(glGetUniformLocation(shader, "u_Texture"), 0));
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
 	
 		/* Render here */
-		glClearColor(1.0f, 0.5f, 0.2f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		GlCall(glClearColor(1.0f, 0.5f, 0.2f, 1.0f));
+		GlCall(glClear(GL_COLOR_BUFFER_BIT));
 		
 		
 		//float timeValue = glfwGetTime();
 		//float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
 		//glUniform4f(location, 0.0f, greenValue, 0.0f, 1.0f);
-		//glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		
-		glUseProgram(shader);
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		GlCall(glActiveTexture(GL_TEXTURE0));
+		GlCall(glBindTexture(GL_TEXTURE_2D, texture)); 
+			  
+		GlCall(glUseProgram(shader));
+		GlCall(glBindVertexArray(VAO));
+		GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -275,11 +294,11 @@ int main(void)
 		/* Poll for and process events */
 		glfwPollEvents();
 	}
-	glBindVertexArray(0);
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(shader);
+	GlCall(glBindVertexArray(0));
+	GlCall(glDeleteVertexArrays(1, &VAO));
+	GlCall(glDeleteBuffers(1, &VBO));
+	GlCall(glDeleteBuffers(1, &EBO));
+	GlCall(glDeleteProgram(shader));
 	glfwTerminate();
 	
 	return 0;
