@@ -1,8 +1,8 @@
 ﻿  main.cpp
-  stb_image.cpp
-  Generating code
-  167 of 385 functions (43.4%) were compiled, the rest were copied from previous compilation.
-    149 functions were new in current compilation
-    9 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  OGL.vcxproj -> C:\DEV\GAPI\OGL\x64\Release\OGL.exe
+C:\DEV\GAPI\OGL\src\main.cpp(128,10): error C2512: 'Shader': no appropriate default constructor available
+C:\DEV\GAPI\OGL\src\Shader.h(19,7): message : see declaration of 'Shader'
+C:\DEV\GAPI\OGL\src\main.cpp(131,16): error C2371: 'shader': redefinition; different basic types
+C:\DEV\GAPI\OGL\src\main.cpp(128): message : see declaration of 'shader'
+  Shader.cpp
+C:\DEV\GAPI\OGL\src\Shader.cpp(110,2): error C2660: 'Shader::GetUniformLocation': function does not take 2 arguments
+C:\DEV\GAPI\OGL\src\Shader.cpp(108,13): message : see declaration of 'Shader::GetUniformLocation'
