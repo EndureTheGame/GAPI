@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <glad.h>
+#include <vector>
 #include "Renderer.h"
 
 

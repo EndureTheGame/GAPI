@@ -11,10 +11,9 @@
 #include "stb_image.h"
 
 #include "Renderer.h"
+#include "VertexBufferLayout.h"
 #include "VertexBuffer.h"
-#include "ElementBuffer.h"
-#include "VertexArray.h"
-#include "Shader.h"
+
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -57,8 +56,8 @@ int main(void)
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
@@ -93,13 +92,9 @@ int main(void)
 
 
 		VertexArray va;
-
 		VertexBuffer vb(positions, 4 * 2 * sizeof(positions));
-		vb.Bind();
-
 		ElementBuffer ebo(indices, sizeof(indices));
-		ebo.Bind();
-		
+
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
 		layout.Push<float>(4);
@@ -119,22 +114,25 @@ int main(void)
 		//GlCall(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(6 * sizeof(float)))); 
 		//GlCall(glEnableVertexAttribArray(2));
 		*/
+
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
- 
+		va.Undbind();
+		vb.Unbind();
+		ebo.Unbind();
+
 		Shader shader("BasicShader.shader");
 		shader.Bind();
-
 		unsigned int texture;
 		GlCall(glGenTextures(1, &texture));
 		GlCall(glBindTexture(GL_TEXTURE_2D, texture));
 		loadImage();
+		Renderer renderer;
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			GlCall(glClearColor(1.0f, 0.5f, 0.2f, 1.0f));
-			GlCall(glClear(GL_COLOR_BUFFER_BIT));
+			renderer.Clear();
 
 			float timeValue = glfwGetTime();
 			float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
@@ -145,9 +143,7 @@ int main(void)
 			GlCall(glActiveTexture(GL_TEXTURE0));
 			GlCall(glBindTexture(GL_TEXTURE_2D, texture));
 
-			shader.Bind();
-			GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-			va.Bind();
+			renderer.Draw(va, ebo, shader);
 			//glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			/* Swap front and back buffers */

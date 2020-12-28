@@ -1,8 +1,17 @@
-﻿  main.cpp
-C:\DEV\GAPI\OGL\src\main.cpp(128,10): error C2512: 'Shader': no appropriate default constructor available
-C:\DEV\GAPI\OGL\src\Shader.h(19,7): message : see declaration of 'Shader'
-C:\DEV\GAPI\OGL\src\main.cpp(131,16): error C2371: 'shader': redefinition; different basic types
-C:\DEV\GAPI\OGL\src\main.cpp(128): message : see declaration of 'shader'
+﻿  ElementBuffer.cpp
+C:\DEV\GAPI\OGL\src\Renderer.h(21,55): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\DEV\GAPI\OGL\src\Renderer.h(21,55): error C2143: syntax error: missing ',' before '&'
+  main.cpp
+C:\DEV\GAPI\OGL\src\main.cpp(133,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Renderer.cpp
   Shader.cpp
-C:\DEV\GAPI\OGL\src\Shader.cpp(110,2): error C2660: 'Shader::GetUniformLocation': function does not take 2 arguments
-C:\DEV\GAPI\OGL\src\Shader.cpp(108,13): message : see declaration of 'Shader::GetUniformLocation'
+C:\DEV\GAPI\OGL\src\Renderer.h(21,74): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\DEV\GAPI\OGL\src\Renderer.h(21,74): error C2143: syntax error: missing ',' before '&'
+  Texture.cpp
+  VertexArray.cpp
+C:\DEV\GAPI\OGL\src\Renderer.h(21,29): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\DEV\GAPI\OGL\src\Renderer.h(21,29): error C2143: syntax error: missing ',' before '&'
+C:\DEV\GAPI\OGL\src\VertexArray.cpp(24,3): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
+  VertexBuffer.cpp
+C:\DEV\GAPI\OGL\src\VertexArray.h(15,35): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\DEV\GAPI\OGL\src\VertexArray.h(15,35): error C2143: syntax error: missing ',' before '&'
